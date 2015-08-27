@@ -1,4 +1,4 @@
-
+﻿
 #include <string.h>
 #include <stdio.h>
 #include <Python/Python.h>
@@ -8,12 +8,27 @@
 #define INF 100
 #define PLAYER_2 2
 #define PLAYER_1 1
+#define DEBUG 0
 int TicTacToeAI(char * stateBoard, int player);
 int minNode(char * board);
 int maxNode(char * board);
 bool is_winner(char * board, char player);
 bool is_full(char * board);
-
+void printBoard(char * board)
+{
+	for (int i = 0; i < BOARD; i++)
+	{
+		if (board[i] == 0)
+			printf("-");
+		else if (board[i] == 1)
+			printf("X");
+		else if (board[i] == 2)
+			printf("O");
+		if ((i+1) % 3  == 0)
+			printf("\n");
+	}
+	printf("evalueation:");
+}
 bool is_winner(char * board, char player)
 {
 	if (board[0] == player&&board[1] == player&&board[2] == player)return true;
@@ -35,55 +50,76 @@ bool is_full(char * board)
 }
 int minNode(char * board)		//player2
 {
+
+	char evaluation = -INF;
 	if (is_winner(board, PLAYER_2))
-		return -1;
+		evaluation = -1;
 	else if (is_full(board))
-		return 0;
-	char evaluation = INF;		//µ±Ç°½áµã¹ÀÖµ
-	char temp;
-	for (int i = 0; i < BOARD; i++)
+		evaluation = 0;
+	else
 	{
-		if (board[i] == 0)
+		//µ±Ç°½áµã¹ÀÖµ
+		char temp;
+		for (int i = 0; i < BOARD; i++)
 		{
-			board[i] = PLAYER_1;
-			temp = maxNode(board);
-			if (temp < evaluation)
-				evaluation = temp;	//×îÐ¡¹ÀÖµ
-			board[i] = 0;		//»Ö¸´µ±Ç°×´Ì¬
+			if (board[i] == 0)
+			{
+				board[i] = PLAYER_1;
+				temp = maxNode(board);
+				if (temp > evaluation)
+					evaluation = temp;	//×îÐ¡¹ÀÖµ
+				board[i] = 0;		//»Ö¸´µ±Ç°×´Ì¬
+			}
 		}
 	}
+#if DEBUG
+	printBoard(board);
+	printf("%d\n", evaluation);
+#endif
 	return evaluation;
 }
 int maxNode(char * board)		//player1
 {
+	char evaluation = INF;
 	if (is_winner(board, PLAYER_1))
-		return 1;
+		evaluation=1;
 	else if (is_full(board))
-		return 0;
-	char evaluation = -INF;		//µ±Ç°½áµã¹ÀÖµ
-	char temp;
-	for (int i = 0; i < BOARD; i++)
+		evaluation=0;
+	else
 	{
-		if (board[i] == 0)
+			//µ±Ç°½áµã¹ÀÖµ
+		char temp;
+		for (int i = 0; i < BOARD; i++)
 		{
-			board[i] = PLAYER_2;
-			temp = minNode(board);
-			if (temp > evaluation)
-				evaluation = temp;	//×îÐ¡¹ÀÖµ
-			board[i] = 0;		//»Ö¸´µ±Ç°×´Ì¬
+			if (board[i] == 0)
+			{
+				board[i] = PLAYER_2;
+				temp = minNode(board);
+				if (temp < evaluation)
+					evaluation = temp;	//×îÐ¡¹ÀÖµ
+				board[i] = 0;		//»Ö¸´µ±Ç°×´Ì¬
+			}
 		}
 	}
+#if DEBUG
+	printBoard(board);
+	printf("%d\n", evaluation);
+#endif
 	return evaluation;
 }
 int TicTacToeAI(char * stateBoard, int player)		//play1:max player2:min
 {
 	//Minmax
-	char pos[BOARD];
-	int cnt=0;
-
+	char probablyWin[BOARD];
+	char probablyWinEvaluation[BOARD];
+	char win[BOARD];
+	int index;
+	int probablyWin_cnt = 0;
+	int win_cnt = 0;
+	char evaluation;
 	if (player == PLAYER_1)
 	{
-		char evaluation = -INF;		//µ±Ç°½áµã¹ÀÖµ
+		evaluation = -INF;		//µ±Ç°½áµã¹ÀÖµ
 		char temp;
 		for (int i = 0; i < BOARD; i++)
 		{
@@ -93,16 +129,22 @@ int TicTacToeAI(char * stateBoard, int player)		//play1:max player2:min
 				temp = maxNode(stateBoard);
 				if (temp >= evaluation)
 				{
-					pos[cnt++] = i;			//Î¨Ò»µÄÂä×Ó·½·¨
+					index = i;			//Î¨Ò»µÄÂä×Ó·½·¨
+					probablyWin[probablyWin_cnt] = i;
+					probablyWinEvaluation[probablyWin_cnt++] = temp;
 					evaluation = temp;	//×îÐ¡¹ÀÖµ
 				}
 				stateBoard[i] = 0;		//»Ö¸´µ±Ç°×´Ì¬
 			}
 		}
+#if DEBUG
+		printBoard(stateBoard);
+		printf("%d\n", evaluation);
+#endif
 	}
 	else if (player == PLAYER_2)
 	{
-		char evaluation = INF;		//µ±Ç°½áµã¹ÀÖµ
+		evaluation = INF;		//µ±Ç°½áµã¹ÀÖµ
 		char temp;
 		for (int i = 0; i < BOARD; i++)
 		{
@@ -112,16 +154,25 @@ int TicTacToeAI(char * stateBoard, int player)		//play1:max player2:min
 				temp = minNode(stateBoard);
 				if (temp <= evaluation)
 				{
-					pos[cnt++] = i;			//Î¨Ò»µÄÂä×Ó·½·¨
+					index = i;		//Î¨Ò»µÄÂä×Ó·½·¨
+					probablyWin[probablyWin_cnt] = i;
+					probablyWinEvaluation[probablyWin_cnt++] = temp;
 					evaluation = temp;	//×îÐ¡¹ÀÖµ
 				}
 				stateBoard[i] = 0;		//»Ö¸´µ±Ç°×´Ì¬
 			}
 		}
+#if DEBUG
+		printBoard(stateBoard);
+		printf("%d\n", evaluation);
+#endif
 	}
+	for (int i = 0; i < probablyWin_cnt;i++)		//find the places which hava a max evaluation
+	if (probablyWinEvaluation[i] == evaluation)
+			win[win_cnt++] = probablyWin[i];
 	srand((unsigned)time(NULL));
-	int random=rand()%cnt;
-	return pos[random];
+	int random=rand()%win_cnt;
+	return win[random];		//randomly choose one place where have a probability to win
 }
 //Python 包装C++函数
 static PyObject *
@@ -135,7 +186,7 @@ TicTacToeAI_TicTacToeAI(PyObject * self,PyObject * args)
 	for(int i=0;i<BOARD;i++)
 		c_stateBoard[i]-='0';
 	pos=TicTacToeAI(c_stateBoard,player);
-	//free(c_stateBoard);
+	free(c_stateBoard);
 	return (PyObject*)Py_BuildValue("i",pos);
 }
 static PyMethodDef TicTacToeAIMethods[]={
