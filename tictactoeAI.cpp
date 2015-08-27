@@ -112,7 +112,7 @@ int TicTacToeAI(char * stateBoard, int player)		//play1:max player2:min
 	//Minmax
 	char probablyWin[BOARD];
 	char probablyWinEvaluation[BOARD];
-	char win[BOARD];
+	int win[BOARD];
 	int index;
 	int probablyWin_cnt = 0;
 	int win_cnt = 0;
@@ -186,7 +186,6 @@ TicTacToeAI_TicTacToeAI(PyObject * self,PyObject * args)
 	for(int i=0;i<BOARD;i++)
 		c_stateBoard[i]-='0';
 	pos=TicTacToeAI(c_stateBoard,player);
-	free(c_stateBoard);
 	return (PyObject*)Py_BuildValue("i",pos);
 }
 static PyMethodDef TicTacToeAIMethods[]={
