@@ -78,8 +78,7 @@ def choose_player_style():
 def get_player_step():
     while True:
         step=raw_input()
-
-        if isinstance(step,str) and int(step)<=9 and int(step)>=1:
+        if len(step)==1 and step>='0' and step<='9':
             return step
         print 'Wrong place .try again'
 if __name__=="__main__":
@@ -91,18 +90,27 @@ if __name__=="__main__":
         again=False
         over_full=False
         over_win=False
-        print "choose X or O that you like:"
+        ai=1
+        print "AI first?(y or n):"
+        ai_first=raw_input().lower()
+        while ai_first!='y' and ai_first!='n':
+            ai_first=raw_input().lower()
+        if ai_first=='y':
+            ai=1
+        else:
+            ai=2
+        print "choose X or O for the first player:"
         choose_player_style()
         draw_board()
         while True:
             player=(steps)%2+1          #which player
             print "waiting player",style[player-1],"go"
             while True:
-                if(player==1):
-                    str_state=""
+                if(player==ai):      #AI
+                    str_state=""    #switch board state from int type to string type
                     for i in range(1,10):
                         str_state+=str(board[i])
-                    pos=t_ai(str_state,player)+1
+                    pos=t_ai(str_state,player)+1        
                 else:
                     pos=get_player_step()
                 if not go(player,pos):
@@ -119,18 +127,17 @@ if __name__=="__main__":
                 break
         while True:
             if over_win==True:
-                print "congratulations.player ",style[player-1]," win!"
+                print "Congratulations.player '",style[player-1],"' win!"
             else:
-                print "ooh,the board is full"
+                print "Ooh,the board is full"
             print "Try again?(y or n)"
             ans=raw_input().lower()
+            while ans!='y' and ans!='n':
+                ans=raw_input().lower()
             if ans=='y':
                 again=True
-                break
             elif ans=='n':
                 again=False
-                break
-            else:
-                print "uuh?"
+            break
         if again==False:
             break
